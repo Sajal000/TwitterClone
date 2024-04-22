@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Personal</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <header class="mb-5">
+        <h1><strong>Get Personal</strong></h1>
+    </header>
+
+    <div class = "container mt-5">
+        <a href="/logout.html" class="logout-link">Logout</a>
+        <div class="post">
+            <form>
+                <label for="titlePost">Title:</label>
+                <input type="text" id="titlePost">
+                <label for="postBody">Post:</label>
+                <textarea id="postBody" placeholder="Share your thoughts....."></textarea>
+                <button type="button" class="btn btn-primary" onclick="post();">Post</button>
+            </form>
+        </div>
+        <br>
+        <h2><strong>Dashboard</strong></h2>
+        <div id="dashboard"></div>
+    </div>
+    <script src="/static/script.js"></script>
+
+    <style>
+        body {
+            background-color: #FCFDF5;
+            position: relative;
+            border-radius: 0;
+            bottom: 10;
+        }
+
+        header {
+            background: #FCFDF5;
+            font-size: 56px;
+        }
+    </style>
+
+</body>
+
+</html>
