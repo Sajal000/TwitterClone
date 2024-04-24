@@ -1,9 +1,11 @@
 const createAccount = () => {
     let txtEmail = document.getElementById("txtEmail").value
     let txtPassword = document.getElementById("txtPassword").value
+    let txtUsername = document.getElementById('txtUsername').value
 
-    if (txtEmail.value == '' || txtPassword.value == '') {
-        alert("Email and password can not be blank.");
+
+    if (txtEmail.value == '' || txtPassword.value == '' || txtUsername.value == '') {
+        alert('Do not leave account info blank!');
         return;
     }
 
@@ -18,6 +20,9 @@ const createAccount = () => {
             const passwordElement = document.createElement('p')
             passwordElement.textContent = account.txtPassword
 
+            const usernameElement = document.createElement('p')
+            usernameElement.textContent = account.txtUsername
+
             alert('Account created sucessfully!')
         } else {
             alert('Failed to create account')
@@ -28,6 +33,7 @@ const createAccount = () => {
     const formData = new FormData()
     formData.append('txtEmail', txtEmail)
     formData.append('txtPassword', txtPassword)
+    formData.append('txtUsername', txtUsername)
 
     xhttp.send(formData)
 }

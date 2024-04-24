@@ -201,9 +201,9 @@ def register():
 def postAccount():
     email = request.form['txtEmail']
     password = request.form['txtPassword']
-    username = str(uuid.uuid4())
-
-    if email and password:
+    username = request.form['txtUsername']
+    
+    if email and password and username:
 
         dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
         dynamodb_table.put_item(
