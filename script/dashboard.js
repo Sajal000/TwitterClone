@@ -4,10 +4,11 @@ function displayPost(data) {
     for (let i = 0; i < items.length; i++) {
         content += 
         `<div>
+            <h4>${items[i].username}</h4>
             <h3>${items[i].title}</h3>
             <p>${items[i].body}</p>
             <p>${items[i].date}</p>
-        </div>`;
+        </div>`
     }
     document.getElementById('dashboard').innerHTML = content;
 }

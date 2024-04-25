@@ -25,15 +25,15 @@ const createAccount = () => {
 
             alert('Account created sucessfully!')
         } else {
-            alert('Failed to create account')
+            alert('Failed to create account!')
         }
     }
 
     xhttp.open('POST', '/createaccount', true)
     const formData = new FormData()
     formData.append('txtEmail', txtEmail)
-    formData.append('txtPassword', txtPassword)
     formData.append('txtUsername', txtUsername)
+    formData.append('txtPassword', txtPassword)
 
     xhttp.send(formData)
 }

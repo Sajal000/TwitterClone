@@ -52,9 +52,11 @@ def home():
         return redirect('/account.html')
     return render_template("login.html")
 
+
 @app.route('/login.html')
 def login_page():
     return render_template('login.html')
+
 
 @app.route('/thing')
 def thing():
@@ -92,6 +94,7 @@ def login():
 
     return response
 
+
 def auto_login():
     cookie = request.cookies.get('remember')
     if cookie is None:
@@ -124,8 +127,9 @@ def is_logged_in():
 def account():
     if not is_logged_in():
         return redirect("/")
-
-    return render_template("account.html", username=session["username"])
+    
+    username = session.get("username", "Not loged in") 
+    return render_template("account.html", username=username)
 
 
 @app.route('/logout.html')
@@ -142,6 +146,7 @@ def logout():
 def upload():
     titlePost = request.form['titlePost']
     postBody = request.form['postBody']
+    username = session.get('username')
 
     if postBody:
         postId = str(uuid.uuid4())
@@ -151,12 +156,13 @@ def upload():
         dynamodb_table.put_item(
             Item={
                 'post': postId,
+                'username': username,
                 'body': postBody,
                 'title': titlePost,
                 'date': postDate
             }
         )
-        return {'post': postId, 'body': postBody,'title': titlePost,'date': postDate},200
+        return {'post': postId,'username': username, 'body': postBody,'title': titlePost,'date': postDate},200
     else:
         return 'Failed to upload post!', 400
 
@@ -199,12 +205,18 @@ def register():
 
 @app.route('/createaccount', methods=['POST'])
 def postAccount():
-    email = request.form['txtEmail']
+    email = request.form['txtEmail'].lower()
+    username = request.form['txtUsername'].lower()
     password = request.form['txtPassword']
-    username = request.form['txtUsername']
     
     if email and password and username:
-
+        
+        emailExists = checkEmail(email)
+        if emailExists:
+            return 'Email already exists!', 400
+        
+        username = "@" + username
+        
         dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
         dynamodb_table.put_item(
             Item={
@@ -213,9 +225,15 @@ def postAccount():
                 'username': username
             }
         )
-        return {'email': email, 'passeord': password, 'username': username},200
+        return {'email': email, 'password': password, 'username': username},200
     else:
         return 'Failed to create account!', 400
+
+
+def checkEmail(email):
+    dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+    response = dynamodb_table.get_item(Key={'email': email})
+    return 'Item' in response
 
 
 if __name__ == '__main__':

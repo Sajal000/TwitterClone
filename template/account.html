@@ -20,6 +20,15 @@
 
     <div class = "container mt-5">
         <a href="/logout.html" class="logout-link">Logout</a>
+        <div class="container mt-5">
+            <div class="wrapper rounded p-4 shadow">
+                <div class="user-info">
+                    <strong>{{ username }}</strong>
+                </div>
+            </div>
+        </div>
+        <br> 
+
         <div class="post">
             <form>
                 <label for="titlePost">Title:</label>
@@ -33,7 +42,7 @@
         <h2><strong>Dashboard</strong></h2>
         <div id="dashboard"></div>
     </div>
-    <script src="/static/script.js"></script>
+    <script src="/static/post.js"></script>
 
     <style>
         body {
