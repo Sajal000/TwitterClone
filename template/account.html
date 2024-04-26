@@ -19,12 +19,18 @@
     </header>
 
     <div class = "container mt-5">
+        <a href="/dashboard.html" class = "dashboard">Home</a>
         <a href="/logout.html" class="logout-link">Logout</a>
+
         <div class="container mt-5">
             <div class="wrapper rounded p-4 shadow">
                 <div class="user-info">
                     <strong>{{ username }}</strong>
                 </div>
+                <!-- <div class = "profile-pic">
+                    <input type="file" id="fileInput" placeholder="Select profile picture" >
+                    <button onclick="uploadFile()">Upload</button>
+                </div> -->
             </div>
         </div>
         <br> 
@@ -40,9 +46,12 @@
         </div>
         <br>
         <h2><strong>Dashboard</strong></h2>
-        <div id="dashboard"></div>
+        <div class = "container mt-5" id="dashboard"></div>
     </div>
-    <script src="/static/post.js"></script>
+    <script src="/static/account.js"></script>
+    <script>
+        const loggedInUsername = "{{ username }}";
+    </script>
 
     <style>
         body {

@@ -167,6 +167,22 @@ def upload():
         return 'Failed to upload post!', 400
 
 
+# @app.route('/profilepic', methods=['POST'])
+# def uploadpfp():
+#     file = request.files['file']
+    
+#     if file:
+#         dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+#         dynamodb_table.put_item(
+#             Item={
+#                 'image': file.filename
+#             }
+#         )
+#         image_url = f"{ACCOUNT_TABLE}{file.filename}"
+#         return {'url': image_url}, 200
+#     else:
+#         return 'Failed to upload photo!', 400
+
 @app.route('/delete/<postId>', methods=['DELETE'])
 def delete_post(postId):
 
@@ -190,7 +206,6 @@ def loadPage():
     sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
 
     return {'result': sorted_posts}
-
 
 
 @app.route('/dashboard.html')

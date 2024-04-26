@@ -9,7 +9,7 @@ function displayPost(data) {
             <p>${items[i].body}</p>
             <p>${items[i].date}</p>
         </div>`
-    }
+        }
     document.getElementById('dashboard').innerHTML = content;
 }
 

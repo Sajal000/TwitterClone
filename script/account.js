@@ -1,6 +1,6 @@
 function loadDoc(url, func) {
     let xhttp = new XMLHttpRequest();
-    xhttp.onload = function() {
+    xhttp.onload = function () {
         if (xhttp.status != 200) {
             console.log("Error");
         } else {
@@ -23,9 +23,9 @@ function login() {
     let URL = "/login?email=" + txtEmail.value + "&password=" + txtPassword.value;
 
     let chkRemember = document.getElementById('chkRemember')
-    if(chkRemember.checked){
+    if (chkRemember.checked) {
         URL += "&remember=yes"
-    } else{
+    } else {
         URL += "&remember=no"
     }
 
@@ -47,14 +47,14 @@ const post = () => {
     let titlePost = document.getElementById('titlePost').value
     let postBody = document.getElementById('postBody').value
 
-    if(!titlePost && !postBody){
+    if (!titlePost && !postBody) {
         alert('Please put a title and body to post! You can\'t just post blank thoughts......')
         return
     }
 
     let xhttp = new XMLHttpRequest()
-    xhttp.onload = function(){
-        if (xhttp.status === 200){
+    xhttp.onload = function () {
+        if (xhttp.status === 200) {
             const response = JSON.parse(xhttp.responseText)
 
             const titleElement = document.createElement('p')
@@ -85,11 +85,11 @@ const post = () => {
 
 const deletePost = (postId) => {
     let xhttp = new XMLHttpRequest()
-    xhttp.onload = function(){
-        if(xhttp.status === 200){
+    xhttp.onload = function () {
+        if (xhttp.status === 200) {
             alert('Post deleted successfully!')
             const deletedPost = document.getElementById(postId)
-            if(deletedPost){
+            if (deletedPost) {
                 deletedPost.remove()
             }
             renderPost();
@@ -103,18 +103,51 @@ const deletePost = (postId) => {
 }
 
 const displayPost = (data) => {
-    const items = data.result
-    let content = ''
-    for (let i = 0; i < items.length; i++){
-        content +=
-        `<div>
-        <h3>${items[i].title}</h3>
-        <p>${items[i].body}</p>
-        <p>${items[i].date}</p>
-        <a href="#" class="delete-link" onclick="deletePost('${items[i].post}')">Delete</a>
-        </div>`
+    const items = data.result;
+    console.log(loggedInUsername)
+
+    let content = '';
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].username === loggedInUsername) { 
+            content +=
+                `<div>
+                    <h4>${items[i].username}</h4>
+                    <h3>${items[i].title}</h3>
+                    <p>${items[i].body}</p>
+                    <p>${items[i].date}</p>
+                    <a href="#" class="delete-link" onclick="deletePost('${items[i].post}')">Delete</a>
+                </div>`;
+        }
     }
     document.getElementById('dashboard').innerHTML = content;
+};
+
+const uploadFile = () => {
+    let fileInput = document.getElementById('fileInput')
+    let file = fileInput.files[0]
+
+    let xhttp = new XMLHttpRequest()
+    xhttp.onload = function() {
+        if (xhttp.status === 200) {
+            const response = JSON.parse(xhttp.responseText);
+
+            const imgElement = document.createElement('img');
+            imgElement.src = response.url;
+
+            divResults.appendChild(imgElement);
+
+            alert('File uploaded successfully!');
+        } else {
+            console.log('Error uploading file!');
+            alert('Error uploading file!');
+        }
+    }
+
+    xhttp.open('POST', '/profilepic', true);
+    let formData = new FormData();
+    formData.append('file', file);
+
+    xhttp.send(formData);
 }
 
 
@@ -124,7 +157,7 @@ function renderPost() {
         .then(data => displayPost(data));
 }
 
-window.onload = function() {
+window.onload = function () {
     renderPost();
 };
 
