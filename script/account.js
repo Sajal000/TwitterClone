@@ -12,7 +12,7 @@ function loadDoc(url, func) {
 }
 
 function login() {
-    let txtEmail = document.getElementById("txtEmail").value.toLowerCase()
+    let txtEmail = document.getElementById("txtEmail")
     let txtPassword = document.getElementById("txtPassword")
 
     if (txtEmail.value == '' || txtPassword.value == '') {
@@ -108,10 +108,11 @@ const displayPost = (data) => {
 
     let content = '';
     for (let i = 0; i < items.length; i++) {
-        if (items[i].username === loggedInUsername) { 
+        if (items[i].username === loggedInUsername) {
             content +=
                 `<div>
                     <h4>${items[i].username}</h4>
+                    <img src="${items[i].url}" alt="ProfilePic" style="width: 50px; height: 50px;">
                     <h3>${items[i].title}</h3>
                     <p>${items[i].body}</p>
                     <p>${items[i].date}</p>
@@ -127,7 +128,7 @@ const uploadFile = () => {
     let file = fileInput.files[0]
 
     let xhttp = new XMLHttpRequest()
-    xhttp.onload = function() {
+    xhttp.onload = function () {
         if (xhttp.status === 200) {
             const response = JSON.parse(xhttp.responseText);
 

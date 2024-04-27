@@ -10,7 +10,7 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-AWSKEY = 'AKIA2UC3ETKLRFQQWHPJ'
+AWSKEY = 'AKIA2UC3ETKLRFQQWHPJ' 
 AWSSECRET = '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'
 DYNAMODB_TABLE = 'personal_social'
 ACCOUNT_TABLE = 'Users'
@@ -182,15 +182,26 @@ def upload():
 def uploadpfp():
     file = request.files['file']
     if file:
+        
+        s3_client = boto3.client('s3',
+                                 aws_access_key_id=AWSKEY,
+                                 aws_secret_access_key=AWSSECRET,
+                                 region_name=AWS_REGION)
+        s3_client.upload_fileobj(file, S3_BUCKET_NAME, file.filename)
+        
         image_uuid = str(uuid.uuid4())
 
         dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
-        dynamodb_table.put_item(
-            Item={
-                'image_name': file.filename              
-            }
+        dynamodb_table.update_item(
+            Key={              
+                'email': session.get('email')
+            },
+            UpdateExpression='SET profile_pic_url = :url',
+            ExpressionAttributeValues={':url': f"{STORAGE_URL}{file.filename}"}
         )
-        return {'image_name': file.filename}, 200
+        image_name = file.filename
+        image_url = f"{STORAGE_URL}{file.filename}"
+        return {'url': image_url}, 200
     else:
         return 'Failed to upload photo!', 400
 
@@ -208,21 +219,6 @@ def delete_post(postId):
         return 'Post deleted successfully!', 200
     else:
         return 'Failed to delete post!', 400
-
-
-@app.route('/dashboard')
-def loadPage():
-    dynamodb_table = get_post(DYNAMODB_TABLE)
-    response = dynamodb_table.scan()
-    items = response['Items']
-    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
-
-    return {'result': sorted_posts}
-
-
-@app.route('/dashboard.html')
-def dashboard():
-    return render_template("dashboard.html")
 
 
 @app.route('/register.html')
@@ -263,6 +259,25 @@ def checkEmail(email):
     return 'Item' in response
 
 
+@app.route('/dashboard')
+def loadPage():
+    dynamodb_table = get_post(DYNAMODB_TABLE)
+    response = dynamodb_table.scan()
+    items = response['Items']
+    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
+    
+    return {'result': sorted_posts}
+
+
+@app.route('/dashboard.html')
+def dashboard():
+    return render_template("dashboard.html")
+
+
 if __name__ == '__main__':
     app.run(debug=True)
+    
+
+# for item in sorted_posts:
+#     item['url'] = STORAGE_URL + item['image_name'] 
 
