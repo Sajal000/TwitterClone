@@ -12,8 +12,8 @@ function loadDoc(url, func) {
 }
 
 function login() {
-    let txtEmail = document.getElementById("txtEmail");
-    let txtPassword = document.getElementById("txtPassword");
+    let txtEmail = document.getElementById("txtEmail").value.toLowerCase()
+    let txtPassword = document.getElementById("txtPassword")
 
     if (txtEmail.value == '' || txtPassword.value == '') {
         alert("Email and password can not be blank.");

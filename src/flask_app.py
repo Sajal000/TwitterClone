@@ -14,6 +14,9 @@ AWSKEY = 'AKIA2UC3ETKLRFQQWHPJ'
 AWSSECRET = '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'
 DYNAMODB_TABLE = 'personal_social'
 ACCOUNT_TABLE = 'Users'
+
+S3_BUCKET_NAME = 'twitterpfp'
+STORAGE_URL = "https://twitterpfp.s3.amazonaws.com/"
 AWS_REGION = 'us-east-1'
 
 dynamodb = boto3.resource('dynamodb',
@@ -36,6 +39,14 @@ def get_post(post):
                         aws_secret_access_key=AWSSECRET)
     postTable = client.Table(post)
     return postTable
+
+def getBucket():
+    s3 = boto3.resource(service_name = 's3', 
+                        region_name = AWS_REGION, 
+                        aws_access_key_id = AWSKEY,
+                        aws_secret_access_key = AWSSECRET)
+    bucket = s3.Bucket(S3_BUCKET_NAME)
+    return bucket
 
 def rememberKey(email):
     table = get_table('remember')
@@ -65,7 +76,7 @@ def thing():
 
 @app.route('/login')
 def login():
-    email = request.args.get("email")
+    email = request.args.get("email").lower()
     password = request.args.get("password")
 
     table = get_table("Users")
@@ -167,21 +178,22 @@ def upload():
         return 'Failed to upload post!', 400
 
 
-# @app.route('/profilepic', methods=['POST'])
-# def uploadpfp():
-#     file = request.files['file']
-    
-#     if file:
-#         dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
-#         dynamodb_table.put_item(
-#             Item={
-#                 'image': file.filename
-#             }
-#         )
-#         image_url = f"{ACCOUNT_TABLE}{file.filename}"
-#         return {'url': image_url}, 200
-#     else:
-#         return 'Failed to upload photo!', 400
+@app.route('/profilepic', methods=['POST'])
+def uploadpfp():
+    file = request.files['file']
+    if file:
+        image_uuid = str(uuid.uuid4())
+
+        dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+        dynamodb_table.put_item(
+            Item={
+                'image_name': file.filename              
+            }
+        )
+        return {'image_name': file.filename}, 200
+    else:
+        return 'Failed to upload photo!', 400
+
 
 @app.route('/delete/<postId>', methods=['DELETE'])
 def delete_post(postId):
