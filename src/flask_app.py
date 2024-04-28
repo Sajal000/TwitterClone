@@ -292,8 +292,20 @@ def loadPage():
     response = dynamodb_table.scan()
     items = response['Items']
     sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
-
+    # for post in sorted_posts:
+    #     profile_pic_url = get_profile_pic_url(post['username'])
+    #     post['profile_pic_url'] = profile_pic_url
     return {'result': sorted_posts}
+
+# @app.route('/dashboard')
+# def loadPage():
+#     dynamodb_table = get_table(DYNAMODB_TABLE)
+#     response = dynamodb_table.scan()
+#     items = response['Items']
+#     for item in items:
+#         item['url'] = STORAGE_URL + items['username']
+        
+#     return {'results': items } 
 
 
 @app.route('/dashboard.html')
@@ -304,6 +316,3 @@ def dashboard():
 if __name__ == '__main__':
     app.run(debug=True)
     
-
-# UpdateExpression='SET profile_pic_url = :url',
-# ExpressionAttributeValues={':url': f"{STORAGE_URL}{file.filename}"}
