@@ -14,6 +14,7 @@ AWSKEY = 'AKIA2UC3ETKLRFQQWHPJ'
 AWSSECRET = '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'
 DYNAMODB_TABLE = 'personal_social'
 ACCOUNT_TABLE = 'Users'
+PFP_TABLE = 'twitterpfp'
 
 S3_BUCKET_NAME = 'twitterpfp'
 STORAGE_URL = "https://twitterpfp.s3.amazonaws.com/"
@@ -39,6 +40,14 @@ def get_post(post):
                         aws_secret_access_key=AWSSECRET)
     postTable = client.Table(post)
     return postTable
+
+def get_pfp(image_details):
+    client = boto3.resource(service_name='dynamodb',
+                region_name=AWS_REGION,
+                aws_access_key_id=AWSKEY,
+                aws_secret_access_key=AWSSECRET)
+    pfpTable = client.Table(image_details)
+    return pfpTable
 
 def getBucket():
     s3 = boto3.resource(service_name = 's3', 
@@ -140,8 +149,17 @@ def account():
         return redirect("/")
     
     username = session.get("username", "Not loged in") 
-    return render_template("account.html", username=username)
+    profile_pic_url = get_profile_pic_url(session.get("email"))
+    return render_template("account.html", username=username, profile_pic_url=profile_pic_url)
 
+
+def get_profile_pic_url(email):
+    dynamodb_table = get_table(PFP_TABLE)
+    response = dynamodb_table.get_item(Key={'email': email})
+    if 'Item' in response:
+        return response['Item']['profile_pic_url']
+    else:
+        return None
 
 @app.route('/logout.html')
 def logout():
@@ -176,36 +194,45 @@ def upload():
         return {'post': postId,'username': username, 'body': postBody,'title': titlePost,'date': postDate},200
     else:
         return 'Failed to upload post!', 400
-
-
+    
 @app.route('/profilepic', methods=['POST'])
 def uploadpfp():
     file = request.files['file']
     if file:
-        
         s3_client = boto3.client('s3',
                                  aws_access_key_id=AWSKEY,
                                  aws_secret_access_key=AWSSECRET,
                                  region_name=AWS_REGION)
         s3_client.upload_fileobj(file, S3_BUCKET_NAME, file.filename)
         
-        image_uuid = str(uuid.uuid4())
+        email = get_email_from_account_table(session.get('email'))
+        if email:
+            image_uuid = str(uuid.uuid4())
 
-        dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
-        dynamodb_table.update_item(
-            Key={              
-                'email': session.get('email')
-            },
-            UpdateExpression='SET profile_pic_url = :url',
-            ExpressionAttributeValues={':url': f"{STORAGE_URL}{file.filename}"}
-        )
-        image_name = file.filename
-        image_url = f"{STORAGE_URL}{file.filename}"
-        return {'url': image_url}, 200
+            dynamodb_table = dynamodb.Table(PFP_TABLE)
+            dynamodb_table.put_item(
+                Item={   
+                    'image_details': image_uuid,   
+                    'image_name': file.filename,        
+                    'email': email
+                }
+            )
+            
+            image_url = f"{STORAGE_URL}{file.filename}"
+            return {'url': image_url}, 200
+        else:
+            return 'Failed to retrieve email from the account table!', 500
     else:
-        return 'Failed to upload photo!', 400
-
-
+        return 'Failed to upload photo!', 400   
+    
+def get_email_from_account_table(email):
+    dynamodb_table = get_table(ACCOUNT_TABLE)
+    response = dynamodb_table.get_item(Key={'email': email})
+    if 'Item' in response:
+        return response['Item']['email']
+    else:
+        return None
+    
 @app.route('/delete/<postId>', methods=['DELETE'])
 def delete_post(postId):
 
@@ -265,7 +292,7 @@ def loadPage():
     response = dynamodb_table.scan()
     items = response['Items']
     sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
-    
+
     return {'result': sorted_posts}
 
 
@@ -278,6 +305,5 @@ if __name__ == '__main__':
     app.run(debug=True)
     
 
-# for item in sorted_posts:
-#     item['url'] = STORAGE_URL + item['image_name'] 
-
+# UpdateExpression='SET profile_pic_url = :url',
+# ExpressionAttributeValues={':url': f"{STORAGE_URL}{file.filename}"}
