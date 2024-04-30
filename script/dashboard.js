@@ -5,14 +5,18 @@ function displayPost(data) {
         content += 
         `<div>
             <h4>${items[i].username}</h4>
-            <img src="${items[i].url}" alt="Thumbnail" style="width: 50px; height: 50px;">
             <h3>${items[i].title}</h3>
             <p>${items[i].body}</p>
             <p>${items[i].date}</p>
+            // <a href="#" class="Reply-link" onclick="replyPost('${items[i].post}')">Reply</a>
         </div>`
         }
     document.getElementById('dashboard').innerHTML = content;
 }
+
+// const replyPost = (postId) => {
+
+// }
 
 function renderPost() {
     fetch('/dashboard') 

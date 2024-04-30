@@ -106,23 +106,23 @@ const displayPost = (data) => {
     const items = data.result;
     console.log(loggedInUsername)
 
-    let content = '';
+    let content = ''
     for (let i = 0; i < items.length; i++) {
         if (items[i].username === loggedInUsername) {
-            const profilePicUrl = items[i].profile_pic_url || 'default_profile_pic.jpg';
             content +=
                 `<div>
-                    <img src="${profilePicUrl}" alt="Profile Picture" style="width: 50px; height: 50px;">
                     <h4>${items[i].username}</h4>
+                    <img src="${items[i].profilePicURL}" width="50" height="50">
                     <h3>${items[i].title}</h3>
                     <p>${items[i].body}</p>
                     <p>${items[i].date}</p>
                     <a href="#" class="delete-link" onclick="deletePost('${items[i].post}')">Delete</a>
-                </div>`;
+                </div>`
         }
     }
-    document.getElementById('dashboard').innerHTML = content;
-};
+    document.getElementById('dashboard').innerHTML = content
+}
+
 
 const uploadFile = () => {
     let fileInput = document.getElementById('fileInput')

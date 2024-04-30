@@ -14,11 +14,10 @@ AWSKEY = 'AKIA2UC3ETKLRFQQWHPJ'
 AWSSECRET = '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'
 DYNAMODB_TABLE = 'personal_social'
 ACCOUNT_TABLE = 'Users'
-PFP_TABLE = 'twitterpfp'
-
 S3_BUCKET_NAME = 'twitterpfp'
-STORAGE_URL = "https://twitterpfp.s3.amazonaws.com/"
+STORAGE_URL = "https://twitterpfp.s3.amazonaws.com/" 
 AWS_REGION = 'us-east-1'
+
 
 dynamodb = boto3.resource('dynamodb',
                           region_name= AWS_REGION,
@@ -40,14 +39,6 @@ def get_post(post):
                         aws_secret_access_key=AWSSECRET)
     postTable = client.Table(post)
     return postTable
-
-def get_pfp(image_details):
-    client = boto3.resource(service_name='dynamodb',
-                region_name=AWS_REGION,
-                aws_access_key_id=AWSKEY,
-                aws_secret_access_key=AWSSECRET)
-    pfpTable = client.Table(image_details)
-    return pfpTable
 
 def getBucket():
     s3 = boto3.resource(service_name = 's3', 
@@ -149,17 +140,8 @@ def account():
         return redirect("/")
     
     username = session.get("username", "Not loged in") 
-    profile_pic_url = get_profile_pic_url(session.get("email"))
-    return render_template("account.html", username=username, profile_pic_url=profile_pic_url)
+    return render_template("account.html", username=username)
 
-
-def get_profile_pic_url(email):
-    dynamodb_table = get_table(PFP_TABLE)
-    response = dynamodb_table.get_item(Key={'email': email})
-    if 'Item' in response:
-        return response['Item']['profile_pic_url']
-    else:
-        return None
 
 @app.route('/logout.html')
 def logout():
@@ -194,45 +176,8 @@ def upload():
         return {'post': postId,'username': username, 'body': postBody,'title': titlePost,'date': postDate},200
     else:
         return 'Failed to upload post!', 400
-    
-@app.route('/profilepic', methods=['POST'])
-def uploadpfp():
-    file = request.files['file']
-    if file:
-        s3_client = boto3.client('s3',
-                                 aws_access_key_id=AWSKEY,
-                                 aws_secret_access_key=AWSSECRET,
-                                 region_name=AWS_REGION)
-        s3_client.upload_fileobj(file, S3_BUCKET_NAME, file.filename)
-        
-        email = get_email_from_account_table(session.get('email'))
-        if email:
-            image_uuid = str(uuid.uuid4())
 
-            dynamodb_table = dynamodb.Table(PFP_TABLE)
-            dynamodb_table.put_item(
-                Item={   
-                    'image_details': image_uuid,   
-                    'image_name': file.filename,        
-                    'email': email
-                }
-            )
-            
-            image_url = f"{STORAGE_URL}{file.filename}"
-            return {'url': image_url}, 200
-        else:
-            return 'Failed to retrieve email from the account table!', 500
-    else:
-        return 'Failed to upload photo!', 400   
-    
-def get_email_from_account_table(email):
-    dynamodb_table = get_table(ACCOUNT_TABLE)
-    response = dynamodb_table.get_item(Key={'email': email})
-    if 'Item' in response:
-        return response['Item']['email']
-    else:
-        return None
-    
+        
 @app.route('/delete/<postId>', methods=['DELETE'])
 def delete_post(postId):
 
@@ -272,6 +217,7 @@ def postAccount():
             Item={
                 'email': email,
                 'password': password,
+                'profilePicFile': 'default.png',
                 'username': username
             }
         )
@@ -286,33 +232,54 @@ def checkEmail(email):
     return 'Item' in response
 
 
+@app.route('/profilepic', methods=['POST'])
+def uploadpfp():
+    file = request.files['file']
+    
+    if file: 
+        s3_client = boto3.client('s3',
+                                 aws_access_key_id=AWSKEY,
+                                 aws_secret_access_key=AWSSECRET,
+                                 region_name=AWS_REGION)
+        s3_client.upload_fileobj(file, S3_BUCKET_NAME, file.filename)
+        
+        profile_pic_url = f"{STORAGE_URL}{file.filename}"
+        
+        dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+        dynamodb_table.update_item(
+            Key={
+                'email': session.get('email'),
+            }, 
+            UpdateExpression='SET profilePicFile = :filename',
+            ExpressionAttributeValues={':filename': file.filename}
+        )
+        return {'url': profile_pic_url, 'profilePicFile': file.filename}, 200
+
+
 @app.route('/dashboard')
 def loadPage():
     dynamodb_table = get_post(DYNAMODB_TABLE)
     response = dynamodb_table.scan()
     items = response['Items']
-    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
-    # for post in sorted_posts:
-    #     profile_pic_url = get_profile_pic_url(post['username'])
-    #     post['profile_pic_url'] = profile_pic_url
-    return {'result': sorted_posts}
-
-# @app.route('/dashboard')
-# def loadPage():
-#     dynamodb_table = get_table(DYNAMODB_TABLE)
-#     response = dynamodb_table.scan()
-#     items = response['Items']
-#     for item in items:
-#         item['url'] = STORAGE_URL + items['username']
-        
-#     return {'results': items } 
-
+    for item in items: 
+       username = item['username']
+      
+       account_table = get_table(ACCOUNT_TABLE)
+       account_response = account_table.get_item(Key={'username': username})
+       profile_info = account_response.get('Item', {})
+       profile_pic_filename = profile_info.get('profilePicFile')
+       item['profilePicFile'] = profile_pic_filename
+       item['profilePicURL'] = STORAGE_URL + profile_pic_filename
+    
+              
+    return {'result': items}
 
 @app.route('/dashboard.html')
 def dashboard():
     return render_template("dashboard.html")
 
-
 if __name__ == '__main__':
     app.run(debug=True)
+    
+# sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)   
     
