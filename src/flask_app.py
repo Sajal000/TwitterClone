@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, make_response, session
+from flask import Flask, request, redirect, render_template, make_response, session, jsonify
 from flask_session import Session
 
 import boto3
@@ -158,8 +158,9 @@ def upload():
     titlePost = request.form['titlePost']
     postBody = request.form['postBody']
     username = session.get('username')
+    email = session.get('email')
 
-    if postBody:
+    if titlePost and postBody:
         postId = str(uuid.uuid4())
         postDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -177,7 +178,32 @@ def upload():
     else:
         return 'Failed to upload post!', 400
 
+
+@app.route('/reply', methods=['POST'])
+def reply():
+    replyTitle = request.form['replyTitle']
+    replyBody = request.form['replyBody']
+    username = session.get('username')
+    
+    if replyTitle and replyBody: 
+        replyId = str(uuid.uuid4())
+        replyDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
+        dynamodb_table = dynamodb.Table(DYNAMODB_TABLE)
+        dynamodb_table.put_item(
+            Item={
+                'post': replyId,
+                'username': username,
+                'body': replyBody,
+                'title': replyTitle,
+                'date': replyDate
+            }
+        )
+        return {'post':replyId,'username': username, 'body': replyBody,'title': replyTitle,'date': replyDate},200
+    else:
+        return 'Failed to upload reply!', 400
+        
+              
 @app.route('/delete/<postId>', methods=['DELETE'])
 def delete_post(postId):
 
@@ -211,17 +237,20 @@ def postAccount():
             return 'Email already exists!', 400
         
         username = "@" + username
+        uid = str(uuid.uuid4())
+        default = 'default.png'
         
         dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
         dynamodb_table.put_item(
             Item={
                 'email': email,
+                'uid': uid, 
                 'password': password,
                 'profilePicFile': 'default.png',
                 'username': username
             }
         )
-        return {'email': email, 'password': password, 'username': username},200
+        return {'email': email, 'uid': uid, 'password': password, 'profilePicFile': default, 'username': username},200
     else:
         return 'Failed to create account!', 400
 
@@ -255,24 +284,14 @@ def uploadpfp():
         )
         return {'url': profile_pic_url, 'profilePicFile': file.filename}, 200
 
-
 @app.route('/dashboard')
 def loadPage():
     dynamodb_table = get_post(DYNAMODB_TABLE)
     response = dynamodb_table.scan()
     items = response['Items']
-    for item in items: 
-       username = item['username']
-      
-       account_table = get_table(ACCOUNT_TABLE)
-       account_response = account_table.get_item(Key={'username': username})
-       profile_info = account_response.get('Item', {})
-       profile_pic_filename = profile_info.get('profilePicFile')
-       item['profilePicFile'] = profile_pic_filename
-       item['profilePicURL'] = STORAGE_URL + profile_pic_filename
-    
-              
-    return {'result': items}
+    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True) 
+                 
+    return ({'result': sorted_posts})
 
 @app.route('/dashboard.html')
 def dashboard():
@@ -280,6 +299,25 @@ def dashboard():
 
 if __name__ == '__main__':
     app.run(debug=True)
-    
-# sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)   
+
+
+
+
+# @app.route('/dashboard')
+# def loadPage():
+#     dynamodb_table = get_post(DYNAMODB_TABLE)
+#     response = dynamodb_table.scan()
+#     items = response['Items']
+#     for item in items: 
+#        username = item['username']
+#        account_table = get_table(ACCOUNT_TABLE)
+#        account_response = account_table.get_item(Key={'username': username})
+       
+#        profile_info = account_response.get('Item')
+#        profile_pic_filename = profile_info.get('profilePicFile')
+       
+#        item['profilePicFile'] = profile_pic_filename
+#        item['profilePicURL'] = STORAGE_URL + profile_pic_filename
+             
+#     return {'result': items}     
     
