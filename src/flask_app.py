@@ -1,4 +1,5 @@
-from flask import Flask, request, redirect, render_template, make_response, session, jsonify
+from xml.dom.minidom import Attr
+from flask import Flask, request, redirect, render_template, make_response, session
 from flask_session import Session
 
 import boto3
@@ -60,7 +61,7 @@ def rememberKey(email):
 @app.route('/')
 def home():
     if is_logged_in():
-        return redirect('/account.html')
+        return redirect('/dashboard.html')
     return render_template("login.html")
 
 
@@ -169,21 +170,26 @@ def upload():
             Item={
                 'post': postId,
                 'username': username,
+                'email': email, 
                 'body': postBody,
                 'title': titlePost,
                 'date': postDate
             }
         )
-        return {'post': postId,'username': username, 'body': postBody,'title': titlePost,'date': postDate},200
+        return {'post': postId,'username': username,'email': email, 'body': postBody,'title': titlePost,'date': postDate},200
     else:
         return 'Failed to upload post!', 400
 
 
 @app.route('/reply', methods=['POST'])
 def reply():
+    if not is_logged_in():
+        return redirect("/login.html")
+     
     replyTitle = request.form['replyTitle']
     replyBody = request.form['replyBody']
     username = session.get('username')
+    email = session.get('email')
     
     if replyTitle and replyBody: 
         replyId = str(uuid.uuid4())
@@ -194,16 +200,17 @@ def reply():
             Item={
                 'post': replyId,
                 'username': username,
+                'email': email, 
                 'body': replyBody,
                 'title': replyTitle,
                 'date': replyDate
             }
         )
-        return {'post':replyId,'username': username, 'body': replyBody,'title': replyTitle,'date': replyDate},200
+        return {'post':replyId,'username': username, 'email': email, 'body': replyBody,'title': replyTitle,'date': replyDate},200
     else:
-        return 'Failed to upload reply!', 400
-        
-              
+        return 'Failed to post reply!', 400
+
+                      
 @app.route('/delete/<postId>', methods=['DELETE'])
 def delete_post(postId):
 
@@ -284,6 +291,7 @@ def uploadpfp():
         )
         return {'url': profile_pic_url, 'profilePicFile': file.filename}, 200
 
+
 @app.route('/dashboard')
 def loadPage():
     dynamodb_table = get_post(DYNAMODB_TABLE)
@@ -291,33 +299,28 @@ def loadPage():
     items = response['Items']
     sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True) 
                  
-    return ({'result': sorted_posts})
+    return {'result': sorted_posts}
+
+
+@app.route('/user/<username>')
+def loadUser(username): 
+    
+    dynamodb_table = get_post(DYNAMODB_TABLE)
+    response = dynamodb_table.scan(
+        FilterExpression=Attr('username').eq(username)
+    )
+    user_posts = response['Items']
+    # sorted_posts = sorted(user_posts, key=lambda x: x['date'], reverse=True) 
+    
+    return render_template("user.html", username=username, posts=user_posts)
+
+
 
 @app.route('/dashboard.html')
 def dashboard():
     return render_template("dashboard.html")
 
+
 if __name__ == '__main__':
     app.run(debug=True)
 
-
-
-
-# @app.route('/dashboard')
-# def loadPage():
-#     dynamodb_table = get_post(DYNAMODB_TABLE)
-#     response = dynamodb_table.scan()
-#     items = response['Items']
-#     for item in items: 
-#        username = item['username']
-#        account_table = get_table(ACCOUNT_TABLE)
-#        account_response = account_table.get_item(Key={'username': username})
-       
-#        profile_info = account_response.get('Item')
-#        profile_pic_filename = profile_info.get('profilePicFile')
-       
-#        item['profilePicFile'] = profile_pic_filename
-#        item['profilePicURL'] = STORAGE_URL + profile_pic_filename
-             
-#     return {'result': items}     
-    

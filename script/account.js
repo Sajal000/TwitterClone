@@ -102,6 +102,7 @@ const deletePost = (postId) => {
     xhttp.send();
 }
 
+
 const displayPost = (data) => {
     const items = data.result;
     console.log(loggedInUsername)

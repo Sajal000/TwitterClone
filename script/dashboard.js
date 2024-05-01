@@ -4,7 +4,7 @@ function displayPost(data) {
     for (let i = 0; i < items.length; i++) {
         content += 
         `<div>
-            <h4>${items[i].username}</h4>
+            <a href="/user/${items[i].username}"><h4>${items[i].username}</h4></a>
             <img src="${items[i].profilePicURL}" width="50" height="50">
             <h3>${items[i].title}</h3>
             <p>${items[i].body}</p>
@@ -16,19 +16,19 @@ function displayPost(data) {
 }
 
 const replyPost = (postId, username) => {
-    let replyForm = document.getElementById('replyForm');
-    let replyTitleInput = document.getElementById('replyTitle');
+    let replyForm = document.getElementById('replyForm')
+    let replyTitleInput = document.getElementById('replyTitle')
 
-    replyTitleInput.value = `Reply to: ${username}`;
-    replyTitleInput.disabled = true;
+    replyTitleInput.value = `Reply to: ${username}`
+    replyTitleInput.readOnly = true
 
-    replyForm.style.display = 'block';
-    document.getElementById('postId').value = postId;
+    replyForm.style.display = 'block'
+    document.getElementById('postId').value = postId
 }
 
 const submitReply = () => {
-    let replyForm = document.getElementById('replyForm');
-    replyForm.style.display = 'block';
+    let replyForm = document.getElementById('replyForm')
+    replyForm.style.display = 'block'
 
     let replyTitle = document.getElementById('replyTitle').value
     let replyBody = document.getElementById('replyBody').value 
@@ -39,7 +39,7 @@ const submitReply = () => {
     }
 
     let xhttp = new XMLHttpRequest()
-    xhttp.onload = function (){
+    xhttp.onload = function () {
     if (xhttp.status === 200) {
         const response = JSON.parse(xhttp.responseText)
 
@@ -53,13 +53,13 @@ const submitReply = () => {
         dashboard.appendChild(titleElement)
         dashboard.appendChild(postElement)
 
-        alert('Reply uploaded successfully!');
+        alert('Reply uploaded successfully!')
         renderPost();
     } else {
-        console.log('Error uploading post!');
-        alert('Error uploading post!');
+        console.log('Error uploading post!')
+        alert('Error uploading post!')
     }
-}
+   }
 
     xhttp.open('POST', '/reply', true)
     const formData = new FormData()
