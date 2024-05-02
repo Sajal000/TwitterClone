@@ -141,7 +141,19 @@ def account():
         return redirect("/")
     
     username = session.get("username", "Not loged in") 
-    return render_template("account.html", username=username)
+    profile_pic = get_profile_pic(session.get("email"))
+    profile_pic_url = STORAGE_URL + profile_pic
+    
+    return render_template("account.html", username=username, url=profile_pic_url)
+
+def get_profile_pic(email):
+    dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+    response = dynamodb_table.get_item(Key={'email': email})
+
+    if 'Item' in response:
+        return response['Item'].get('profilePicFile')
+    else:
+        return 'default.png'
 
 
 @app.route('/logout.html')
@@ -164,19 +176,28 @@ def upload():
     if titlePost and postBody:
         postId = str(uuid.uuid4())
         postDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+        
+        account_table = dynamodb.Table(ACCOUNT_TABLE)
+        response = account_table.get_item(Key={'email': email})
+        
+        if 'Item' in response:
+            profilePicName = response['Item'].get('profilePicFile')
+        
         dynamodb_table = dynamodb.Table(DYNAMODB_TABLE)
         dynamodb_table.put_item(
             Item={
                 'post': postId,
                 'username': username,
+                'profilePic': profilePicName, 
                 'email': email, 
                 'body': postBody,
                 'title': titlePost,
                 'date': postDate
             }
         )
-        return {'post': postId,'username': username,'email': email, 'body': postBody,'title': titlePost,'date': postDate},200
+        profile_pic_url = f"{STORAGE_URL}{profilePicName}" 
+        return {'post': postId,'username': username,'url': profile_pic_url, 
+                'email': email, 'body': postBody,'title': titlePost,'date': postDate},200
     else:
         return 'Failed to upload post!', 400
 
@@ -195,18 +216,27 @@ def reply():
         replyId = str(uuid.uuid4())
         replyDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
+        account_table = dynamodb.Table(ACCOUNT_TABLE)
+        response = account_table.get_item(Key={'email': email})
+        
+        if 'Item' in response:
+            profilePicName = response['Item'].get('profilePicFile')
+        
         dynamodb_table = dynamodb.Table(DYNAMODB_TABLE)
         dynamodb_table.put_item(
             Item={
                 'post': replyId,
                 'username': username,
+                'profilePic': profilePicName,
                 'email': email, 
                 'body': replyBody,
                 'title': replyTitle,
                 'date': replyDate
             }
         )
-        return {'post':replyId,'username': username, 'email': email, 'body': replyBody,'title': replyTitle,'date': replyDate},200
+        profile_pic_url = f"{STORAGE_URL}{profilePicName}" 
+        return {'post': replyId,'username': username,'url': profile_pic_url, 
+                'email': email, 'body': replyBody,'title': replyTitle,'date': replyDate},200
     else:
         return 'Failed to post reply!', 400
 
@@ -253,7 +283,7 @@ def postAccount():
                 'email': email,
                 'uid': uid, 
                 'password': password,
-                'profilePicFile': 'default.png',
+                'profilePicFile': default,
                 'username': username
             }
         )
@@ -279,27 +309,32 @@ def uploadpfp():
                                  region_name=AWS_REGION)
         s3_client.upload_fileobj(file, S3_BUCKET_NAME, file.filename)
         
-        profile_pic_url = f"{STORAGE_URL}{file.filename}"
+        image_uuid = str(uuid.uuid4())
         
         dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
         dynamodb_table.update_item(
             Key={
                 'email': session.get('email'),
             }, 
-            UpdateExpression='SET profilePicFile = :filename',
-            ExpressionAttributeValues={':filename': file.filename}
+            UpdateExpression='SET profilePicFile = :filename, imageUID = :uid',
+            ExpressionAttributeValues={
+                ':filename': file.filename,
+                ':uid': image_uuid
+            }
         )
-        return {'url': profile_pic_url, 'profilePicFile': file.filename}, 200
-
+        image_url = f"{STORAGE_URL}{file.filename}"
+        return {'url': image_url}, 200
 
 @app.route('/dashboard')
 def loadPage():
     dynamodb_table = get_post(DYNAMODB_TABLE)
     response = dynamodb_table.scan()
     items = response['Items']
-    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True) 
-                 
-    return {'result': sorted_posts}
+    for item in items: 
+        item['url'] = STORAGE_URL + item['profilePicFile'] 
+    return {'result': items}
+    
+    # sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True) 
 
     
 @app.route('/dashboard.html')
