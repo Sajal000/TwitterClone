@@ -165,7 +165,6 @@ def loadUser(username):
         user_posts = response['Items']
         return render_template("user.html", username=username, posts=user_posts)
 
-
 @app.route('/logout.html')
 def logout():
     session.pop("email", None)
