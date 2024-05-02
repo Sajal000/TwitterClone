@@ -92,16 +92,15 @@ const deletePost = (postId) => {
             if (deletedPost) {
                 deletedPost.remove()
             }
-            renderPost();
+            renderPost()
         } else {
             console.error('Failed to delete post!')
             alert('Failed to delete post!')
         }
     }
-    xhttp.open("DELETE", `/delete/${postId}`, true);
-    xhttp.send();
+    xhttp.open("DELETE", `/delete/${postId}`, true)
+    xhttp.send()
 }
-
 
 const displayPost = (data) => {
     const items = data.result;

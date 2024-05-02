@@ -16,12 +16,11 @@ function displayPost(data) {
 }
 
 function renderPost() {
-    fetch('/dashboard') 
+    fetch(`/dashboard`) // the reason why it is not loading the user's post fix here
         .then(response => response.json())
         .then(data => displayPost(data));
 }
 
-window.onload = function() {
+window.onload = function() {    
     renderPost();
 };
-

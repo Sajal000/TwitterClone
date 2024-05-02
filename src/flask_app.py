@@ -1,6 +1,6 @@
-from xml.dom.minidom import Attr
 from flask import Flask, request, redirect, render_template, make_response, session
 from flask_session import Session
+from boto3.dynamodb.conditions import Attr
 
 import boto3
 import uuid
@@ -301,24 +301,20 @@ def loadPage():
                  
     return {'result': sorted_posts}
 
-
-@app.route('/user/<username>')
-def loadUser(username): 
     
-    dynamodb_table = get_post(DYNAMODB_TABLE)
-    response = dynamodb_table.scan(
-        FilterExpression=Attr('username').eq(username)
-    )
-    user_posts = response['Items']
-    # sorted_posts = sorted(user_posts, key=lambda x: x['date'], reverse=True) 
-    
-    return render_template("user.html", username=username, posts=user_posts)
-
-
-
 @app.route('/dashboard.html')
 def dashboard():
     return render_template("dashboard.html")
+
+
+@app.route('/user/<username>')
+def loadUser(username): 
+        dynamodb_table = get_post(DYNAMODB_TABLE)
+        response = dynamodb_table.scan(
+            FilterExpression=Attr('username').eq(username)
+        )
+        user_posts = response['Items']
+        return render_template("user.html", username=username, posts=user_posts)
 
 
 if __name__ == '__main__':
