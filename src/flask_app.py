@@ -156,6 +156,16 @@ def get_profile_pic(email):
         return 'default.png'
 
 
+@app.route('/user/<username>')
+def loadUser(username): 
+        dynamodb_table = get_post(DYNAMODB_TABLE)
+        response = dynamodb_table.scan(
+            FilterExpression=Attr('username').eq(username)
+        )
+        user_posts = response['Items']
+        return render_template("user.html", username=username, posts=user_posts)
+
+
 @app.route('/logout.html')
 def logout():
     session.pop("email", None)
@@ -336,21 +346,9 @@ def loadPage():
     
     # sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True) 
 
-    
 @app.route('/dashboard.html')
 def dashboard():
     return render_template("dashboard.html")
-
-
-@app.route('/user/<username>')
-def loadUser(username): 
-        dynamodb_table = get_post(DYNAMODB_TABLE)
-        response = dynamodb_table.scan(
-            FilterExpression=Attr('username').eq(username)
-        )
-        user_posts = response['Items']
-        return render_template("user.html", username=username, posts=user_posts)
-
 
 if __name__ == '__main__':
     app.run(debug=True)

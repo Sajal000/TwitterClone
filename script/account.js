@@ -2,13 +2,13 @@ function loadDoc(url, func) {
     let xhttp = new XMLHttpRequest();
     xhttp.onload = function () {
         if (xhttp.status != 200) {
-            console.log("Error");
+            console.log("Error")
         } else {
-            func(xhttp.response);
+            func(xhttp.response)
         }
     }
-    xhttp.open("GET", url);
-    xhttp.send();
+    xhttp.open("GET", url)
+    xhttp.send()
 }
 
 function login() {
@@ -16,11 +16,11 @@ function login() {
     let txtPassword = document.getElementById("txtPassword")
 
     if (txtEmail.value == '' || txtPassword.value == '') {
-        alert("Email and password can not be blank.");
-        return;
+        alert("Email and password can not be blank.")
+        return
     }
 
-    let URL = "/login?email=" + txtEmail.value + "&password=" + txtPassword.value;
+    let URL = "/login?email=" + txtEmail.value + "&password=" + txtPassword.value
 
     let chkRemember = document.getElementById('chkRemember')
     if (chkRemember.checked) {
@@ -29,17 +29,17 @@ function login() {
         URL += "&remember=no"
     }
 
-    loadDoc(URL, login_response);
+    loadDoc(URL, login_response)
 }
 
 function login_response(response) {
-    let data = JSON.parse(response);
-    let result = data["result"];
+    let data = JSON.parse(response)
+    let result = data["result"]
     if (result != "OK") {
-        alert(result);
+        alert(result)
     }
     else {
-        window.location.replace("/account.html");
+        window.location.replace("/account.html")
     }
 }
 
@@ -67,11 +67,11 @@ const post = () => {
             dashboard.appendChild(titleElement)
             dashboard.appendChild(postElement)
 
-            alert('Post uploaded successfully!');
+            alert('Post uploaded successfully!')
             renderPost();
         } else {
-            console.log('Error uploading post!');
-            alert('Error uploading post!');
+            console.log('Error uploading post!')
+            alert('Error uploading post!')
         }
     };
 
@@ -81,6 +81,35 @@ const post = () => {
     formData.append('postBody', postBody)
 
     xhttp.send(formData)
+}
+
+const uploadFile = () => {
+    let fileInput = document.getElementById('fileInput')
+    let file = fileInput.files[0]
+
+    let xhttp = new XMLHttpRequest()
+    xhttp.onload = function () {
+        if (xhttp.status === 200) {
+            const response = JSON.parse(xhttp.responseText)
+
+            const imgElement = document.createElement('img')
+            imgElement.src = response.url
+
+            divResults.appendChild(imgElement)
+
+            alert('File uploaded successfully!')
+            renderPost()
+        } else {
+            console.log('Error uploading file!')
+            alert('Error uploading file!')
+        }
+    }
+
+    xhttp.open('POST', '/profilepic', true)
+    let formData = new FormData()
+    formData.append('file', file)
+
+    xhttp.send(formData);
 }
 
 const deletePost = (postId) => {
@@ -109,11 +138,11 @@ const displayPost = (data) => {
     let content = ''
     for (let i = 0; i < items.length; i++) {
         if (items[i].username === loggedInUsername) {
-            const profilePicURL = post.profilePicURL;
+            const url = post.profilePicURL
             content +=
                 `<div>
                     <h4>${items[i].username}</h4>
-                    <img src="${profilePicURL}" width="50" height="50"> 
+                    <img src="${url}" width="50" height="50"> 
                     <h3>${items[i].title}</h3>
                     <p>${items[i].body}</p>
                     <p>${items[i].date}</p>
@@ -124,44 +153,14 @@ const displayPost = (data) => {
     document.getElementById('dashboard').innerHTML = content
 }
 
-
-const uploadFile = () => {
-    let fileInput = document.getElementById('fileInput')
-    let file = fileInput.files[0]
-
-    let xhttp = new XMLHttpRequest()
-    xhttp.onload = function () {
-        if (xhttp.status === 200) {
-            const response = JSON.parse(xhttp.responseText);
-
-            const imgElement = document.createElement('img');
-            imgElement.src = response.url;
-
-            divResults.appendChild(imgElement);
-
-            alert('File uploaded successfully!');
-        } else {
-            console.log('Error uploading file!');
-            alert('Error uploading file!');
-        }
-    }
-
-    xhttp.open('POST', '/profilepic', true);
-    let formData = new FormData();
-    formData.append('file', file);
-
-    xhttp.send(formData);
-}
-
-
 function renderPost() {
     fetch('/dashboard')
         .then(response => response.json())
-        .then(data => displayPost(data));
+        .then(data => displayPost(data))
 }
 
 window.onload = function () {
-    renderPost();
+    renderPost()
 };
 
 
