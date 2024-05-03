@@ -12,15 +12,15 @@ function displayPost(data) {
             <a href="#" class="Reply-link" onclick="replyPost('${items[i].post}', '${items[i].username}')">Reply</a>
         </div>`;
     }
-    document.getElementById('userPosts').innerHTML = content;
+    document.getElementById('dashboard').innerHTML = content;
 }
 
 function renderPost(username) {
     fetch(`/user/${username}`)
         .then(response => response.json())
-        .then(data => displayPost(data))
+        .then(data => displayPost(data));
 }
 
 window.onload = function() {
-    renderPost()
+    renderPost();
 }

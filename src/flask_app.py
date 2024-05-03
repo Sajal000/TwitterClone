@@ -134,6 +134,47 @@ def is_logged_in():
         return auto_login()
     return True
 
+@app.route('/register.html')
+def register():
+    return render_template('register.html')
+
+
+@app.route('/createaccount', methods=['POST'])
+def postAccount():
+    email = request.form['txtEmail'].lower()
+    username = request.form['txtUsername'].lower()
+    password = request.form['txtPassword']
+    
+    if email and password and username:
+        
+        emailExists = checkEmail(email)
+        if emailExists:
+            return 'Email already exists!', 400
+        
+        username = "@" + username
+        uid = str(uuid.uuid4())
+        default = 'default.png'
+        
+        dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+        dynamodb_table.put_item(
+            Item={
+                'email': email,
+                'uid': uid, 
+                'password': password,
+                'profilePicFile': default,
+                'username': username
+            }
+        )
+        return {'email': email, 'uid': uid, 'password': password, 'profilePicFile': default, 'username': username},200
+    else:
+        return 'Failed to create account!', 400
+
+
+def checkEmail(email):
+    dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+    response = dynamodb_table.get_item(Key={'email': email})
+    return 'Item' in response
+
 
 @app.route('/account.html')
 def account():
@@ -154,6 +195,7 @@ def get_profile_pic(email):
         return response['Item'].get('profilePicFile')
     else:
         return 'default.png'
+
 
 @app.route('/dashboard')
 def loadPage():
@@ -177,7 +219,11 @@ def loadUser(username):
     items = response['Items']
     sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
     
-    return {'result': sorted_posts}
+    return  {'result': sorted_posts}
+
+@app.route('/user.html')
+def userPost():
+    return render_template("user.html")
 
 
 @app.route('/logout.html')
@@ -278,48 +324,6 @@ def delete_post(postId):
         return 'Post deleted successfully!', 200
     else:
         return 'Failed to delete post!', 400
-
-
-@app.route('/register.html')
-def register():
-    return render_template('register.html')
-
-
-@app.route('/createaccount', methods=['POST'])
-def postAccount():
-    email = request.form['txtEmail'].lower()
-    username = request.form['txtUsername'].lower()
-    password = request.form['txtPassword']
-    
-    if email and password and username:
-        
-        emailExists = checkEmail(email)
-        if emailExists:
-            return 'Email already exists!', 400
-        
-        username = "@" + username
-        uid = str(uuid.uuid4())
-        default = 'default.png'
-        
-        dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
-        dynamodb_table.put_item(
-            Item={
-                'email': email,
-                'uid': uid, 
-                'password': password,
-                'profilePicFile': default,
-                'username': username
-            }
-        )
-        return {'email': email, 'uid': uid, 'password': password, 'profilePicFile': default, 'username': username},200
-    else:
-        return 'Failed to create account!', 400
-
-
-def checkEmail(email):
-    dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
-    response = dynamodb_table.get_item(Key={'email': email})
-    return 'Item' in response
 
 
 @app.route('/profilepic', methods=['POST'])
