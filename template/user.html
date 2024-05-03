@@ -18,9 +18,8 @@
         <h1><strong>Get Personal</strong></h1>
     </header>
 
-    <div class = "container mt-5">
-        <a href="/dashboard.html" class = "dashboard">Home</a>
-        <a href="/logout.html" class="logout-link">Logout</a>
+    <div class="container mt-5">
+        <a href="/dashboard.html" class="dashboard">Home</a>
 
         <div class="container mt-5">
             <div class="wrapper rounded p-4 shadow">
@@ -31,15 +30,26 @@
                 </div>
             </div>
         </div>
-        <br> 
+        <br>
         <br>
 
-        <div class = "container mt-5">
-        <h2><strong>Posts</strong></h2>
-        <div id="dashboard"></div>
+        <div class="container mt-5">
+            <h2><strong>Posts</strong></h2>
+            <div id="dashboard">
+                {% for post in posts %}
+                <div>
+                    <h4>{{ post.username }}</h4>
+                    <img src="{{ post.url }}" width="50" height="50">
+                    <h3>{{ post.title }}</h3>
+                    <p>{{ post.body }}</p>
+                    <p>{{ post.date }}</p>
+                    <a href="#" class="Reply-link" onclick="replyPost('{{ post.post }}', '{{ post.username }}')">Reply</a>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
-    
+
     <script src="/static/user.js"></script>
 
     <style>

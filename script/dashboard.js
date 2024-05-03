@@ -4,9 +4,9 @@ function displayPost(data) {
     for (let i = 0; i < items.length; i++) {
         console.log("User link:", `/user/${items[i].username}`);
 
-        content += 
+        content +=
         `<div>
-            <a href="/user.html"><h4>${items[i].username}</h4></a>
+            <a href="/user/${items[i].username}"><h4>${items[i].username}</h4></a>
             <img src="${items[i].url}" alt="Profile Pic" width="50" height="50">
             <h3>${items[i].title}</h3>
             <p>${items[i].body}</p>
@@ -33,7 +33,7 @@ const submitReply = () => {
     replyForm.style.display = 'block'
 
     let replyTitle = document.getElementById('replyTitle').value
-    let replyBody = document.getElementById('replyBody').value 
+    let replyBody = document.getElementById('replyBody').value
 
     if (!replyTitle && !replyBody) {
         alert('Please put a title and body to post! You can\'t just reply blank thoughts......')
@@ -72,7 +72,7 @@ const submitReply = () => {
 }
 
 function renderPost() {
-    fetch('/dashboard') 
+    fetch('/dashboard')
         .then(response => response.json())
         .then(data => displayPost(data));
 }

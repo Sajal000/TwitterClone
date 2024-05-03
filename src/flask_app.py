@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, make_response, session, jsonify
+from flask import Flask, request, redirect, render_template, make_response, session
 from flask_session import Session
 from boto3.dynamodb.conditions import Attr
 
@@ -11,12 +11,12 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-AWSKEY = 'AKIA2UC3ETKLRFQQWHPJ' 
+AWSKEY = 'AKIA2UC3ETKLRFQQWHPJ'
 AWSSECRET = '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'
 DYNAMODB_TABLE = 'personal_social'
 ACCOUNT_TABLE = 'Users'
 S3_BUCKET_NAME = 'twitterpfp'
-STORAGE_URL = "https://twitterpfp.s3.amazonaws.com/" 
+STORAGE_URL = "https://twitterpfp.s3.amazonaws.com/"
 AWS_REGION = 'us-east-1'
 
 
@@ -42,8 +42,8 @@ def get_post(post):
     return postTable
 
 def getBucket():
-    s3 = boto3.resource(service_name = 's3', 
-                        region_name = AWS_REGION, 
+    s3 = boto3.resource(service_name = 's3',
+                        region_name = AWS_REGION,
                         aws_access_key_id = AWSKEY,
                         aws_secret_access_key = AWSSECRET)
     bucket = s3.Bucket(S3_BUCKET_NAME)
@@ -144,22 +144,22 @@ def postAccount():
     email = request.form['txtEmail'].lower()
     username = request.form['txtUsername'].lower()
     password = request.form['txtPassword']
-    
+
     if email and password and username:
-        
+
         emailExists = checkEmail(email)
         if emailExists:
             return 'Email already exists!', 400
-        
+
         username = "@" + username
         uid = str(uuid.uuid4())
         default = 'default.png'
-        
+
         dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
         dynamodb_table.put_item(
             Item={
                 'email': email,
-                'uid': uid, 
+                'uid': uid,
                 'password': password,
                 'profilePicFile': default,
                 'username': username
@@ -180,11 +180,11 @@ def checkEmail(email):
 def account():
     if not is_logged_in():
         return redirect("/")
-    
-    username = session.get("username", "Not loged in") 
+
+    username = session.get("username", "Not loged in")
     profile_pic = get_profile_pic(session.get("email"))
     profile_pic_url = STORAGE_URL + profile_pic
-    
+
     return render_template("account.html", username=username, url=profile_pic_url)
 
 def get_profile_pic(email):
@@ -202,24 +202,25 @@ def loadPage():
     dynamodb_table = get_post(DYNAMODB_TABLE)
     response = dynamodb_table.scan()
     items = response['Items']
-    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True) 
+    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
 
     return {'result': sorted_posts}
 
-    
+
 @app.route('/dashboard.html')
 def dashboard():
     return render_template("dashboard.html")
 
 
 @app.route('/user/<username>')
-def loadUser(username): 
+def loadUser(username):
     dynamodb_table = get_post(DYNAMODB_TABLE)
     response = dynamodb_table.scan(FilterExpression=Attr('username').eq(username))
     items = response['Items']
     sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
-    
-    return  {'result': sorted_posts}
+
+    return render_template("user.html", username=username, posts=sorted_posts)
+
 
 @app.route('/user.html')
 def userPost():
@@ -246,27 +247,27 @@ def upload():
     if titlePost and postBody:
         postId = str(uuid.uuid4())
         postDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
+
         account_table = dynamodb.Table(ACCOUNT_TABLE)
         response = account_table.get_item(Key={'email': email})
-        
+
         if 'Item' in response:
             profilePicName = response['Item'].get('profilePicFile')
-        
+
         dynamodb_table = dynamodb.Table(DYNAMODB_TABLE)
         dynamodb_table.put_item(
             Item={
                 'post': postId,
                 'username': username,
-                'profilePic': profilePicName, 
-                'email': email, 
+                'profilePic': profilePicName,
+                'email': email,
                 'body': postBody,
                 'title': titlePost,
                 'date': postDate
             }
         )
-        profile_pic_url = f"{STORAGE_URL}{profilePicName}" 
-        return {'post': postId,'username': username,'url': profile_pic_url, 
+        profile_pic_url = f"{STORAGE_URL}{profilePicName}"
+        return {'post': postId,'username': username,'url': profile_pic_url,
                 'email': email, 'body': postBody,'title': titlePost,'date': postDate},200
     else:
         return 'Failed to upload post!', 400
@@ -276,41 +277,41 @@ def upload():
 def reply():
     if not is_logged_in():
         return redirect("/login.html")
-     
+
     replyTitle = request.form['replyTitle']
     replyBody = request.form['replyBody']
     username = session.get('username')
     email = session.get('email')
-    
-    if replyTitle and replyBody: 
+
+    if replyTitle and replyBody:
         replyId = str(uuid.uuid4())
         replyDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
+
         account_table = dynamodb.Table(ACCOUNT_TABLE)
         response = account_table.get_item(Key={'email': email})
-        
+
         if 'Item' in response:
             profilePicName = response['Item'].get('profilePicFile')
-        
+
         dynamodb_table = dynamodb.Table(DYNAMODB_TABLE)
         dynamodb_table.put_item(
             Item={
                 'post': replyId,
                 'username': username,
                 'profilePic': profilePicName,
-                'email': email, 
+                'email': email,
                 'body': replyBody,
                 'title': replyTitle,
                 'date': replyDate
             }
         )
-        profile_pic_url = f"{STORAGE_URL}{profilePicName}" 
-        return {'post': replyId,'username': username,'url': profile_pic_url, 
+        profile_pic_url = f"{STORAGE_URL}{profilePicName}"
+        return {'post': replyId,'username': username,'url': profile_pic_url,
                 'email': email, 'body': replyBody,'title': replyTitle,'date': replyDate},200
     else:
         return 'Failed to post reply!', 400
 
-                      
+
 @app.route('/delete/<postId>', methods=['DELETE'])
 def delete_post(postId):
 
@@ -329,21 +330,21 @@ def delete_post(postId):
 @app.route('/profilepic', methods=['POST'])
 def uploadpfp():
     file = request.files['file']
-    
-    if file: 
+
+    if file:
         s3_client = boto3.client('s3',
                                  aws_access_key_id=AWSKEY,
                                  aws_secret_access_key=AWSSECRET,
                                  region_name=AWS_REGION)
         s3_client.upload_fileobj(file, S3_BUCKET_NAME, file.filename)
-        
+
         image_uuid = str(uuid.uuid4())
-        
+
         dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
         dynamodb_table.update_item(
             Key={
                 'email': session.get('email'),
-            }, 
+            },
             UpdateExpression='SET profilePicFile = :filename, imageUID = :uid',
             ExpressionAttributeValues={
                 ':filename': file.filename,
