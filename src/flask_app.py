@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, make_response, session
+from flask import Flask, request, redirect, render_template, make_response, session, jsonify
 from flask_session import Session
 from boto3.dynamodb.conditions import Attr
 
@@ -155,15 +155,30 @@ def get_profile_pic(email):
     else:
         return 'default.png'
 
+@app.route('/dashboard')
+def loadPage():
+    dynamodb_table = get_post(DYNAMODB_TABLE)
+    response = dynamodb_table.scan()
+    items = response['Items']
+    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True) 
+
+    return {'result': sorted_posts}
+
+    
+@app.route('/dashboard.html')
+def dashboard():
+    return render_template("dashboard.html")
+
 
 @app.route('/user/<username>')
 def loadUser(username): 
-        dynamodb_table = get_post(DYNAMODB_TABLE)
-        response = dynamodb_table.scan(
-            FilterExpression=Attr('username').eq(username)
-        )
-        user_posts = response['Items']
-        return render_template("user.html", username=username, posts=user_posts)
+    dynamodb_table = get_post(DYNAMODB_TABLE)
+    response = dynamodb_table.scan(FilterExpression=Attr('username').eq(username))
+    items = response['Items']
+    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
+    
+    return {'result': sorted_posts}
+
 
 @app.route('/logout.html')
 def logout():
@@ -333,21 +348,6 @@ def uploadpfp():
         )
         image_url = f"{STORAGE_URL}{file.filename}"
         return {'url': image_url}, 200
-
-@app.route('/dashboard')
-def loadPage():
-    dynamodb_table = get_post(DYNAMODB_TABLE)
-    response = dynamodb_table.scan()
-    items = response['Items']
-    for item in items: 
-        item['url'] = STORAGE_URL + item['profilePicFile'] 
-    return {'result': items}
-    
-    # sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True) 
-
-@app.route('/dashboard.html')
-def dashboard():
-    return render_template("dashboard.html")
 
 if __name__ == '__main__':
     app.run(debug=True)

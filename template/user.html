@@ -27,14 +27,16 @@
                 <div class="user-info">
                     <img src="{{ url }}" width="50" height="50">
                     <strong>{{ username }}</strong>
+                    <div id="username" style="display: none;">{{ username }}</div>
                 </div>
             </div>
         </div>
         <br> 
         <br>
         <h2><strong>Posts</strong></h2>
-        <div class = "container mt-5" id="dashboard"></div>
+        <div class = "container mt-5" id="userPosts"></div>
     </div>
+    
     <script src="/static/user.js"></script>
 
     <style>

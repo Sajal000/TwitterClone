@@ -10,17 +10,17 @@ function displayPost(data) {
             <p>${items[i].body}</p>
             <p>${items[i].date}</p>
             <a href="#" class="Reply-link" onclick="replyPost('${items[i].post}', '${items[i].username}')">Reply</a>
-        </div>`
-        }
-    document.getElementById('dashboard').innerHTML = content;
+        </div>`;
+    }
+    document.getElementById('userPosts').innerHTML = content;
 }
 
-function renderPost() {
-    fetch(`/user/${loggedInUsername}`) 
+function renderPost(username) {
+    fetch(`/user/${username}`)
         .then(response => response.json())
-        .then(data => displayPost(data));
+        .then(data => displayPost(data))
 }
 
-window.onload = function() {    
-    renderPost();
-};
+window.onload = function() {
+    renderPost()
+}
