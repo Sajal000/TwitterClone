@@ -1,6 +1,8 @@
 function displayPost(data) {
     const items = data.result;
     let content = '';
+    const url = `${items[1].url}`;
+
     for (let i = 0; i < items.length; i++) {
         content +=
         `<div>
@@ -11,6 +13,8 @@ function displayPost(data) {
             <p>${items[i].date}</p>
             <a href="#" class="Reply-link" onclick="replyPost('${items[i].post}', '${items[i].username}')">Reply</a>
         </div>`;
+        console.log(url)
+
     }
     document.getElementById('dashboard').innerHTML = content;
 }

@@ -140,9 +140,10 @@ const displayPost = (data) => {
         if (items[i].username === loggedInUsername) {
             const url = post.profilePicURL
             content +=
+            console.log(url)
                 `<div>
                     <h4>${items[i].username}</h4>
-                    <img src="${url}" width="50" height="50"> 
+                    <img src="${items[i].url}"alt="Profile Pic" width="50" height="50">
                     <h3>${items[i].title}</h3>
                     <p>${items[i].body}</p>
                     <p>${items[i].date}</p>

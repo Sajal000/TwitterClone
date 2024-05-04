@@ -181,9 +181,13 @@ def account():
     if not is_logged_in():
         return redirect("/")
 
-    username = session.get("username", "Not loged in")
+    username = session.get("username", "Not logged in")
     profile_pic = get_profile_pic(session.get("email"))
     profile_pic_url = STORAGE_URL + profile_pic
+
+    # file = request.files.get('file')
+    # if file:
+    #     update_profile_pic(username)
 
     return render_template("account.html", username=username, url=profile_pic_url)
 
@@ -197,12 +201,36 @@ def get_profile_pic(email):
         return 'default.png'
 
 
+def update_profile_pic(username):
+    dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+    post_table = dynamodb.Table(DYNAMODB_TABLE)
+
+    response = dynamodb_table.get_item(Key={'username': username})
+    postResponse = post_table.scan(FilterExpression=Attr('username').eq(username))
+
+    if 'Item' in postResponse:
+        account_profile_pic = response['Item'].get('profilePicFile')
+        post_picture = postResponse['Item'].get('profilePic')
+
+        if post_picture != account_profile_pic:
+            post_table.update_item(
+                Key={'username': username},
+                UpdateExpression='SET profilePic = :profilePicFile',
+                ExpressionAttributeValues={':profilePic': account_profile_pic}
+            )
+            return {'result': 'Profile picture updated successfully.'}
+
+
+
 @app.route('/dashboard')
 def loadPage():
     dynamodb_table = get_post(DYNAMODB_TABLE)
     response = dynamodb_table.scan()
     items = response['Items']
+    for item in items :
+        item["url"]=STORAGE_URL + item["profilePic"]
     sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
+
 
     return {'result': sorted_posts}
 
@@ -212,28 +240,43 @@ def dashboard():
     return render_template("dashboard.html")
 
 
+def fetchProfilePic(username):
+    dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+    response = dynamodb_table.get_item(Key={'username': username })
+
+    # items = response['Item']
+
+    if 'Item' in response:
+        profilePicName = response['Item'].get('profilePicFile')
+
+    profile_pic_url = f"{STORAGE_URL}{profilePicName}"
+
+    return profile_pic_url
+
+
+@app.route('/user.html')
+def userPost():
+    return render_template("user.html")
+
+
 @app.route('/user/<username>')
 def loadUser(username):
     dynamodb_table = get_post(DYNAMODB_TABLE)
     response = dynamodb_table.scan(FilterExpression=Attr('username').eq(username))
     items = response['Items']
-    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
-    profile_pic_url = get_profile_pic_url(username)
 
-    return render_template("user.html", username=username, posts=sorted_posts, profile_pic_url=profile_pic_url)
+    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
+
+    return render_template("user.html", username=username, posts=sorted_posts)
 
 def get_profile_pic_url(username):
     dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
     response = dynamodb_table.get_item(Key={'username': username})
 
     if 'Item' in response:
-        return response['Item'].get('profilePicFile')
+        return STORAGE_URL + response['Item'].get('profilePicFile')
     else:
         return 'default.png'
-
-@app.route('/user.html')
-def userPost():
-    return render_template("user.html")
 
 
 @app.route('/logout.html')
@@ -285,7 +328,7 @@ def upload():
 @app.route('/reply', methods=['POST'])
 def reply():
     if not is_logged_in():
-        return redirect("/login.html")
+        return redirect("/")
 
     replyTitle = request.form['replyTitle']
     replyBody = request.form['replyBody']
@@ -361,6 +404,8 @@ def uploadpfp():
             }
         )
         image_url = f"{STORAGE_URL}{file.filename}"
+        update_profile_pic(session.get('username'))
+
         return {'url': image_url}, 200
 
 if __name__ == '__main__':
