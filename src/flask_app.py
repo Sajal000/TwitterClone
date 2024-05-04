@@ -218,9 +218,18 @@ def loadUser(username):
     response = dynamodb_table.scan(FilterExpression=Attr('username').eq(username))
     items = response['Items']
     sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
+    profile_pic_url = get_profile_pic_url(username)
 
-    return render_template("user.html", username=username, posts=sorted_posts)
+    return render_template("user.html", username=username, posts=sorted_posts, profile_pic_url=profile_pic_url)
 
+def get_profile_pic_url(username):
+    dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+    response = dynamodb_table.get_item(Key={'username': username})
+
+    if 'Item' in response:
+        return response['Item'].get('profilePicFile')
+    else:
+        return 'default.png'
 
 @app.route('/user.html')
 def userPost():
