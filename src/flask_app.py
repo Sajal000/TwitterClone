@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, make_response, session
+from flask import Flask, request, redirect, render_template, make_response, session, abort
 from flask_session import Session
 from boto3.dynamodb.conditions import Attr
 
@@ -216,6 +216,58 @@ def update_profile_pic(username):
             )
             return {'result': 'Profile picture updated successfully.'}
 
+@app.route('/user.html')
+def userPost():
+    return render_template("user.html")
+
+@app.route('/user/<username>')
+def loadUser(username):
+    try:
+        email = get_email_from_username(username)
+        if email:
+            dynamodb_table = get_post(DYNAMODB_TABLE)
+            response = dynamodb_table.scan(FilterExpression=Attr('username').eq(username))
+            user_pic_url = fetch_user_pic(email)
+            items = response['Items']
+            sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
+
+            return render_template("user.html", username=username, posts=sorted_posts, url=user_pic_url)
+        else:
+            abort(404, "User not found")
+    except Exception as e:
+        abort(500, str(e))
+
+def fetch_user_pic(email):
+    try:
+        dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+        response = dynamodb_table.get_item(Key={'email': email})
+
+        if 'Item' in response:
+            profile_pic_file = response['Item'].get('profilePicFile')
+            if profile_pic_file:
+                return STORAGE_URL + profile_pic_file
+            else:
+                return 'default.png'
+        else:
+            return 'default.png'
+    except Exception as e:
+        abort(500, str(e))
+
+
+def get_email_from_username(username):
+    try:
+        dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+        response = dynamodb_table.scan(FilterExpression=Attr('username').eq(username))
+
+        if 'Items' in response:
+            items = response['Items']
+            if items:
+                return items[0].get('email')
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    return None
 
 
 @app.route('/dashboard')
@@ -248,32 +300,6 @@ def fetchProfilePic(username):
     profile_pic_url = f"{STORAGE_URL}{profilePicName}"
 
     return profile_pic_url
-
-
-@app.route('/user/<username>')
-def loadUser(username):
-    dynamodb_table = get_post(DYNAMODB_TABLE)
-    response = dynamodb_table.scan(FilterExpression=Attr('username').eq(username))
-    items = response['Items']
-
-    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
-
-    return render_template("user.html", username=username, posts=sorted_posts)
-
-def get_profile_pic_url(username):
-    dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
-    response = dynamodb_table.get_item(Key={'username': username})
-
-    if 'Item' in response:
-        return STORAGE_URL + response['Item'].get('profilePicFile')
-    else:
-        return 'default.png'
-
-
-
-@app.route('/user.html')
-def userPost():
-    return render_template("user.html")
 
 
 @app.route('/logout.html')
