@@ -7,67 +7,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Get Personal</title>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/account.css">
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>-->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>-->
+    <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>-->
 </head>
 
 <body>
-    <header class="mb-5">
-        <h1><strong>Get Personal</strong></h1>
-    </header>
+    <div class="account-container">
+        <div class="user-info-container">
+                <button class="home-button" onclick="location.href='/dashboard.html'">Home</button>
+                <button class="logout-button" onclick="location.href='/logout.html'">Logout</button>
+            <div class="user">
+                <img class="profile-picture"src="{{ url }}" width="150" height="150">
+                <h3><strong>{{ username }}</strong></h3>
+            </div>
+            <br>
+            <div class = "profile-pic">
+                <input class="file-input" type="file" id="fileInput" placeholder="Select profile picture">
+                <button class="button" onclick="uploadFile()">Upload</button>
+            </div>
 
-    <div class = "container mt-5">
-        <a href="/dashboard.html" class = "dashboard">Home</a>
-        <a href="/logout.html" class="logout-link">Logout</a>
-
-        <div class="container mt-5">
-            <div class="wrapper rounded p-4 shadow">
-                <div class="user-info">
-                    <img src="{{ url }}" width="50" height="50">
-                    <strong>{{ username }}</strong>
-                </div>
-                <br>
-                <div class = "profile-pic">
-                    <input type="file" id="fileInput" placeholder="Select profile picture" >
-                    <button onclick="uploadFile()">Upload</button>
-                </div>
+            <div class="make-post">
+                <form>
+                    <h2>Make a Post</h2>
+                    <h4>Title:</h4>
+                    <label for="titlePost"></label>
+                    <input class="title-textfield" type="text" id="titlePost">
+                    <h4>Body:</h4>
+                    <label for="postBody"></label>
+                    <textarea class="body-textfield" id="postBody" placeholder="Share your thoughts....."></textarea>
+                    <br>
+                    <button type="button" class="button" onclick="post();">Post</button>
+                </form>
             </div>
         </div>
-        <br>
-
-        <div class="post">
-            <form>
-                <label for="titlePost">Title:</label>
-                <input type="text" id="titlePost">
-                <label for="postBody">Post:</label>
-                <textarea id="postBody" placeholder="Share your thoughts....."></textarea>
-                <button type="button" class="btn btn-primary" onclick="post();">Post</button>
-            </form>
+    <br>
+    <br>
+        <div class="your-posts-container">
+            <h2>Your Posts</h2>
+            <div id="dashboard"><h2></div>
         </div>
-        <br>
-        <h2><strong>Your Posts:</strong></h2>
-        <div class = "container mt-5" id="dashboard"></div>
     </div>
+
     <script src="/static/account.js"></script>
     <script>
         const loggedInUsername = "{{ username }}";
     </script>
 
-    <style>
-        body {
-            background-color: #FCFDF5;
-            position: relative;
-            border-radius: 0;
-            bottom: 10;
-        }
-
-        header {
-            background: #FCFDF5;
-            font-size: 56px;
-        }
-    </style>
 
 </body>
 

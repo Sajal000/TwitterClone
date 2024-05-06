@@ -43,6 +43,25 @@ function login_response(response) {
     }
 }
 
+const displayPost = (data) => {
+    const items = data.result
+    let content = ''
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].username === loggedInUsername) {
+            content +=
+                `<div class="posts">
+                    <h4>${items[i].username}</h4>
+                    <img src="${items[i].url}"alt="Profile Pic" width="80" height="80">
+                    <h3>${items[i].title}</h3>
+                    <p>${items[i].body}</p>
+                    <p>${items[i].date}</p>
+                    <button class="delete-button" onclick="deletePost('${items[i].post}')">Delete</button>
+                </div>`
+        }
+    }
+    document.getElementById('dashboard').innerHTML = content
+}
+
 const post = () => {
     let titlePost = document.getElementById('titlePost').value
     let postBody = document.getElementById('postBody').value
@@ -131,28 +150,6 @@ const deletePost = (postId) => {
     xhttp.send()
 }
 
-const displayPost = (data) => {
-    const items = data.result;
-    console.log(loggedInUsername)
-
-    let content = ''
-    for (let i = 0; i < items.length; i++) {
-        if (items[i].username === loggedInUsername) {
-            const url = post.profilePicURL
-            content +=
-            console.log(url)
-                `<div>
-                    <h4>${items[i].username}</h4>
-                    <img src="${items[i].url}"alt="Profile Pic" width="50" height="50">
-                    <h3>${items[i].title}</h3>
-                    <p>${items[i].body}</p>
-                    <p>${items[i].date}</p>
-                    <a href="#" class="delete-link" onclick="deletePost('${items[i].post}')">Delete</a>
-                </div>`
-        }
-    }
-    document.getElementById('dashboard').innerHTML = content
-}
 
 function renderPost() {
     fetch('/dashboard')

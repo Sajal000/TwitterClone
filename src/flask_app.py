@@ -185,10 +185,6 @@ def account():
     profile_pic = get_profile_pic(session.get("email"))
     profile_pic_url = STORAGE_URL + profile_pic
 
-    # file = request.files.get('file')
-    # if file:
-    #     update_profile_pic(username)
-
     return render_template("account.html", username=username, url=profile_pic_url)
 
 def get_profile_pic(email):
@@ -254,11 +250,6 @@ def fetchProfilePic(username):
     return profile_pic_url
 
 
-@app.route('/user.html')
-def userPost():
-    return render_template("user.html")
-
-
 @app.route('/user/<username>')
 def loadUser(username):
     dynamodb_table = get_post(DYNAMODB_TABLE)
@@ -277,6 +268,12 @@ def get_profile_pic_url(username):
         return STORAGE_URL + response['Item'].get('profilePicFile')
     else:
         return 'default.png'
+
+
+
+@app.route('/user.html')
+def userPost():
+    return render_template("user.html")
 
 
 @app.route('/logout.html')
