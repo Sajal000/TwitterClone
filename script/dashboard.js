@@ -15,6 +15,7 @@ function displayPost(data) {
                 <button type="button" class="reply-link" onclick="replyPost('${items[i].post}', '${items[i].username}')">Reply</button>
             </a>
         </div>`;
+        console.log(url)
 
     }
     document.getElementById('dashboard').innerHTML = content;

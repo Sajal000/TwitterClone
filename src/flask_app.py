@@ -200,7 +200,7 @@ def account():
     if not is_logged_in():
         return redirect("/")
 
-    username = session.get("username", "Not logged in")
+    username = session.get("username", "Not loged in")
     profile_pic = get_profile_pic(session.get("email"))
     profile_pic_url = STORAGE_URL + profile_pic
 
@@ -280,6 +280,7 @@ def loadPage():
     for item in items :
         item["url"]=STORAGE_URL + item["profilePic"]
     sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
+
 
     return {'result': sorted_posts}
 
@@ -415,6 +416,8 @@ def upload_profile_pic():
             }
         )
         image_url = f"{STORAGE_URL}{file.filename}"
+        update_profile_pic(session.get('username'))
+
         return {'url': image_url}, 200
     except Exception as e:
         return {'error': str(e)}, 500
