@@ -1,0 +1,201 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 75px;
+  }
+  
+  body {
+    overflow-x: hidden;
+    position: relative;
+    background-color: #E6E6E3 !important;
+    font-family:'Poppins';
+  
+  }
+  
+  .account-container{
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      flex-wrap:wrap;
+      /*flex-direction:column;*/
+      margin:150px;
+  }
+  .user-info-container{
+      background-color:#FFFFFF;
+      max-width:350px;
+      margin:10px;
+      padding:20px;
+      border-radius:10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  
+  }
+  .user-info-container h3{
+      font-size:28px;
+  }
+  
+  .make-post{
+      background-color:#F5F5F5;
+      margin:10px;
+      padding:10px;
+      border-radius:10px;
+  }
+  .your-posts-container{
+      margin:10px;
+  }
+  .posts{
+      background-color:#FFFFFF;
+      margin-top:10px;
+      padding:10px;
+      border-radius:10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      width:1000px;
+  }
+  @media screen and (max-width: 1000px){
+    .posts{
+       width:auto !important;
+       min-width:350px;
+    }
+  
+  }
+  .posts h4{
+      font-size:24px;
+  }
+  .posts h3{
+      font-size:20px;
+  }
+  .posts p{
+      margin:5px;
+      font-size:18px;
+  }
+  
+  .file-input {
+    background-color:rgba(51, 51, 51, 0.12);
+    border-radius: 8px;
+    border-width: 0;
+    color: #333333;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    list-style: none;
+    margin: 5px;
+    padding: 10px 12px;
+    text-align: center;
+    transition: all 200ms;
+    vertical-align: baseline;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  .title-textfield{
+      border-radius:10px;
+      height:23px;
+      font-family:"Poppins";
+  }
+  .body-textfield{
+      border-radius:10px;
+      font-family:"Poppins";
+  
+  }
+  .profile-picture{
+      border:5px solid black;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  
+  }
+  
+  
+  .button {
+      background-color:rgba(51, 51, 51, 0.12);
+      border-radius: 8px;
+      border-width: 0;
+      color: black;
+      cursor: pointer;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      list-style: none;
+      margin: 5px;
+      padding: 10px 12px;
+      text-align: center;
+      transition: all 200ms;
+      vertical-align: baseline;
+      white-space: nowrap;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+  }
+  .home-button {
+      background-color:#405CF5;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      border-width: 0;
+      color: white;
+      cursor: pointer;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      list-style: none;
+      margin: 5px;
+      padding: 10px 12px;
+      text-align: center;
+      transition: all 200ms;
+      vertical-align: baseline;
+      white-space: nowrap;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+  }
+  .logout-button {
+      background-color:red;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      border-width: 0;
+      color: white;
+      cursor: pointer;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      list-style: none;
+      margin: 5px;
+      padding: 10px 12px;
+      text-align: center;
+      transition: all 200ms;
+      vertical-align: baseline;
+      white-space: nowrap;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+  }
+  .delete-button {
+      background-color:red;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      border-width: 0;
+      color: white;
+      cursor: pointer;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      list-style: none;
+      margin: 5px;
+      padding: 10px 12px;
+      text-align: center;
+      transition: all 200ms;
+      vertical-align: baseline;
+      white-space: nowrap;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+  }
+  

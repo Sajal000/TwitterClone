@@ -1,6 +1,6 @@
-from flask import Flask, request, redirect, render_template, make_response, session
+from flask import Flask, request, redirect, render_template, make_response, session, abort
 from flask_session import Session
-from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.conditions import Attr, Key
 
 import boto3
 import uuid
@@ -134,6 +134,11 @@ def is_logged_in():
         return auto_login()
     return True
 
+def notLoggedIn():
+    if not session.get('email'):
+        return True
+    return False
+
 @app.route('/register.html')
 def register():
     return render_template('register.html')
@@ -150,6 +155,10 @@ def postAccount():
         emailExists = checkEmail(email)
         if emailExists:
             return 'Email already exists!', 400
+        
+        usernameExists = checkUsername(username)
+        if usernameExists:
+            return 'Username already exists!', 400
 
         username = "@" + username
         uid = str(uuid.uuid4())
@@ -175,13 +184,23 @@ def checkEmail(email):
     response = dynamodb_table.get_item(Key={'email': email})
     return 'Item' in response
 
+def checkUsername(username):
+    dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+    response = dynamodb_table.scan(FilterExpression=Attr('username').eq(username))
+
+    if 'Items' in response:
+        items = response['Items']
+        if items:
+            return True
+
+    return False
 
 @app.route('/account.html')
 def account():
     if not is_logged_in():
         return redirect("/")
 
-    username = session.get("username", "Not loged in")
+    username = session.get("username", "Not logged in")
     profile_pic = get_profile_pic(session.get("email"))
     profile_pic_url = STORAGE_URL + profile_pic
 
@@ -197,11 +216,69 @@ def get_profile_pic(email):
         return 'default.png'
 
 
+@app.route('/user.html')
+def userPost():
+    return render_template("user.html")
+
+@app.route('/user/<username>')
+def loadUser(username):
+    try:
+        email = get_email_from_username(username)
+        if email:
+            dynamodb_table = get_post(DYNAMODB_TABLE)
+            response = dynamodb_table.scan(FilterExpression=Attr('username').eq(username))
+            user_pic_url = fetch_user_pic(email)
+            items = response['Items']
+            for item in items:
+                item["url"] = STORAGE_URL + item["profilePic"]
+            sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
+
+            return render_template("user.html", username=username, posts=sorted_posts, url=user_pic_url)
+        else:
+            abort(404, "User not found")
+    except Exception as e:
+        abort(500, str(e))
+
+def fetch_user_pic(email):
+    try:
+        dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+        response = dynamodb_table.get_item(Key={'email': email})
+
+        if 'Item' in response:
+            profile_pic_file = response['Item'].get('profilePicFile')
+            if profile_pic_file:
+                return STORAGE_URL + profile_pic_file
+            else:
+                return 'default.png'
+        else:
+            return 'default.png'
+    except Exception as e:
+        abort(500, str(e))
+
+
+def get_email_from_username(username):
+    try:
+        dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
+        response = dynamodb_table.scan(FilterExpression=Attr('username').eq(username))
+
+        if 'Items' in response:
+            items = response['Items']
+            if items:
+                return items[0].get('email')
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    return None
+
+
 @app.route('/dashboard')
 def loadPage():
     dynamodb_table = get_post(DYNAMODB_TABLE)
     response = dynamodb_table.scan()
     items = response['Items']
+    for item in items :
+        item["url"]=STORAGE_URL + item["profilePic"]
     sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
 
     return {'result': sorted_posts}
@@ -210,31 +287,6 @@ def loadPage():
 @app.route('/dashboard.html')
 def dashboard():
     return render_template("dashboard.html")
-
-
-@app.route('/user/<username>')
-def loadUser(username):
-    dynamodb_table = get_post(DYNAMODB_TABLE)
-    response = dynamodb_table.scan(FilterExpression=Attr('username').eq(username))
-    items = response['Items']
-    sorted_posts = sorted(items, key=lambda x: x['date'], reverse=True)
-    profile_pic_url = get_profile_pic_url(username)
-
-    return render_template("user.html", username=username, posts=sorted_posts, profile_pic_url=profile_pic_url)
-
-def get_profile_pic_url(username):
-    dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
-    response = dynamodb_table.get_item(Key={'username': username})
-
-    if 'Item' in response:
-        return response['Item'].get('profilePicFile')
-    else:
-        return 'default.png'
-
-@app.route('/user.html')
-def userPost():
-    return render_template("user.html")
-
 
 @app.route('/logout.html')
 def logout():
@@ -284,8 +336,8 @@ def upload():
 
 @app.route('/reply', methods=['POST'])
 def reply():
-    if not is_logged_in():
-        return redirect("/login.html")
+    if notLoggedIn():
+        return redirect("/").message("Please log in to reply.")
 
     replyTitle = request.form['replyTitle']
     replyBody = request.form['replyBody']
@@ -337,10 +389,13 @@ def delete_post(postId):
 
 
 @app.route('/profilepic', methods=['POST'])
-def uploadpfp():
-    file = request.files['file']
+def upload_profile_pic():
+    file = request.files.get('file')
 
-    if file:
+    if not file:
+        return {'error': 'No file provided'}, 400
+
+    try:
         s3_client = boto3.client('s3',
                                  aws_access_key_id=AWSKEY,
                                  aws_secret_access_key=AWSSECRET,
@@ -348,7 +403,6 @@ def uploadpfp():
         s3_client.upload_fileobj(file, S3_BUCKET_NAME, file.filename)
 
         image_uuid = str(uuid.uuid4())
-
         dynamodb_table = dynamodb.Table(ACCOUNT_TABLE)
         dynamodb_table.update_item(
             Key={
@@ -362,7 +416,35 @@ def uploadpfp():
         )
         image_url = f"{STORAGE_URL}{file.filename}"
         return {'url': image_url}, 200
+    except Exception as e:
+        return {'error': str(e)}, 500
+
+
+
+def update_profile_pic(email):
+    try:
+        account_table = dynamodb.Table(ACCOUNT_TABLE)
+        post_table = dynamodb.Table(DYNAMODB_TABLE)
+
+        account_response = account_table.get_item(Key={'email': email})
+        account_profile_pic = account_response['Item'].get('profilePicFile')
+
+        post_response = post_table.query(
+            KeyConditionExpression=Key('email').eq(email)
+        )
+
+        for post_item in post_response['Items']:
+            post_id = post_item.get('post')
+            if post_id:
+                post_table.update_item(
+                    Key={'post': post_id},
+                    UpdateExpression='SET profilePic = :profilePicFile',
+                    ExpressionAttributeValues={':profilePicFile': account_profile_pic}
+                )
+
+        return {'result': 'Profile picture updated successfully.'}
+    except Exception as e:
+        abort(500, str(e))
 
 if __name__ == '__main__':
     app.run(debug=True)
-

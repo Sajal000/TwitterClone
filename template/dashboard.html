@@ -7,41 +7,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/dashboard.css">
+    <script src="/static/dashboard.js"></script>
+
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>-->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>-->
+    <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>-->
 </head>
 
 <body>
-    <header class="mb-5">
-        <h1><strong>Get Personal</strong></h1>
-    </header>
+<header class="mb-5">
+        <img class="logo" src="https://twitterpfp.s3.amazonaws.com/twitter-5-logo-png-transparent.png" alt="Logo" width="50" height="50">
+</header>
 
-    <div class="container mt-5">
-        <a href="/account.html" class = "account">Account</a>
-        <h2><strong>Dashboard</strong></h2>
-        <div id="dashboard"></div>
-
-        <div id="replyForm" style="display: none;">
-            <input type="text" id="replyTitle"><br>
-            <textarea id="replyBody" placeholder="Your reply"></textarea><br>
-            <button type="button" class="btn btn-primary" onclick="submitReply()">Reply</button>
+    <div class="dashboard-container">
+                <button class="account-button" onclick="location.href='/account.html'">Account</button>
+        <h1><strong>Dashboard</strong></h1>
+        <div class="posts-container">
+            <div class="reply-container" id="replyForm" style="display: none;">
+                <h3>Make a Reply</h3>
+                <h4>Title:</h4>
+                <input type="text" id="replyTitle"><br>
+                <h4>Body:</h4>
+                <textarea id="replyBody" placeholder="Your reply"></textarea><br>
+                <button type="button" class="reply-button" onclick="submitReply()">Reply</button>
+            </div>
+            <div id="dashboard"></div>
         </div>
     </div>
-
-    <script src="/static/dashboard.js"></script>
-
-    <style>
-        body {
-            background-color: #FCFDF5;
-        }
-
-        header {
-            background: #FCFDF5;
-            font-size: 56px;
-        }
-    </style>
 
 </body>
 

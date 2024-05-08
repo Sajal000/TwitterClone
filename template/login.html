@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Get Personal</title>
-    
+
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
@@ -14,12 +14,13 @@
 </head>
 
 <body>
-    <header class="mb-5">
-        <h1><strong>Get Personal</strong></h1> 
-    </header>
+
     <div class="container mt-5">
         <div class="wrapper rounded p-4 shadow">
             <div class="col-md-6 offset-md-3">
+                <div class="logo-container">
+                    <img class="logo" src="https://twitterpfp.s3.amazonaws.com/twitter-5-logo-png-transparent.png" alt="Logo" width="50" height="50">
+                </div>
                 <h1> Login </h1>
                 <form>
                     <div class="form-group">
@@ -36,7 +37,7 @@
                     </div>
                     <button type="button" class="btn btn-primary" onclick="login();">Login</button>
                     <a href="/dashboard.html" class="btn btn-secondary ml-2">Dashboard</a>
-                    <br> 
+                    <br>
                     <br>
                     Don't have an account? <a href= "/register.html" class="btn btn-link">Register</a>
                 </form>
@@ -44,26 +45,36 @@
         </div>
     </div>
 
-    <style> 
+    <style>
     body{
         display: flex;
         justify-content: center;
-        align-items: center; 
+        align-items: center;
         min-height: 100vh;
-        background: #FCFDF5;
+        background-color: #E6E6E3 !important;
         border: none;
     }
 
     header{
-        position: fixed; 
-        top: 0; 
-        left: 0; 
-        right: 0; 
-        z-index: 1000; 
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
         background: #FCFDF5;
         height: 100px;
-        font-size: 56px; 
-    }   
+        font-size: 56px;
+    }
+    .logo-container{
+        display:flex;
+        justify-content:center;
+        align-content:center;
+        margin:20px;
+    }
+    .logo{
+        height:100px;
+        width:120px;
+    }
     .wrapper{
         background: whitesmoke;
         height: 500px;
@@ -72,16 +83,16 @@
     }
 
     .wrapper h1{
-        font-size: 36px; 
+        font-size: 36px;
         text-align: center;
     }
 
     .wrapper .form-group{
         width: 100%;
         height: 50px;
-        margin: 30px 0; 
+        margin: 30px 0;
         border: none;
-        outline: none; 
+        outline: none;
         margin-bottom: 50px;
     }
     </style>

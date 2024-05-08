@@ -1,18 +1,31 @@
 function displayPost(data) {
     const items = data.result;
     let content = '';
+    const url = `${items[1].url}`;
+
     for (let i = 0; i < items.length; i++) {
         content +=
-        `<div>
+        `<div class="post">
             <a href="/user/${items[i].username}"><h4>${items[i].username}</h4></a>
             <img src="${items[i].url}"alt="Profile Pic" width="50" height="50">
             <h3>${items[i].title}</h3>
             <p>${items[i].body}</p>
             <p>${items[i].date}</p>
-            <a href="#" class="Reply-link" onclick="replyPost('${items[i].post}', '${items[i].username}')">Reply</a>
+            <a href = "#">
+                <button type="button" class="reply-link" onclick="replyPost('${items[i].post}', '${items[i].username}')">Reply</button>
+            </a>
         </div>`;
+
     }
     document.getElementById('dashboard').innerHTML = content;
+}
+const isLoggedIn = true; // Replace with your logic to check if user is logged in
+
+if (!isLoggedIn) {
+    const replyButtons = document.getElementsByClassName('reply-link');
+    for (let i = 0; i < replyButtons.length; i++) {
+        replyButtons[i].disabled = true;
+    }
 }
 
 const replyPost = (postId, username) => {
