@@ -11,13 +11,13 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-AWSKEY = 'AKIA2UC3ETKLRFQQWHPJ'
-AWSSECRET = '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'
-DYNAMODB_TABLE = 'personal_social'
-ACCOUNT_TABLE = 'Users'
-S3_BUCKET_NAME = 'twitterpfp'
-STORAGE_URL = "https://twitterpfp.s3.amazonaws.com/"
-AWS_REGION = 'us-east-1'
+AWSKEY = KEY
+AWSSECRET = SECRETKEY
+DYNAMODB_TABLE = TABLE
+ACCOUNT_TABLE = TABLE2
+S3_BUCKET_NAME = BUCKET
+STORAGE_URL = URL
+AWS_REGION = REGION
 
 
 dynamodb = boto3.resource('dynamodb',
