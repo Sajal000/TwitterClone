@@ -44,10 +44,16 @@
       padding:10px;
       border-radius:10px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-      max-width:1300px;
+      width:1000px;
+  }
+  @media screen and (max-width: 1000px){
+    .posts{
+      width:100% !important;
+      min-width:350px;
+  
+    }
   
   }
-  
   .posts h4{
       font-size:24px;
   }
